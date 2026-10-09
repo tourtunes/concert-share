@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061426">
+  <title>TourTunes Concert Tracker</title>
+  <meta name="description" content="Discover concerts and find official ticket listings with TourTunes Concert Tracker.">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #050c17;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      padding: 24px 14px;
+    }
+
+    .card {
+      max-width: 540px;
+      margin: 0 auto;
+      background: linear-gradient(160deg, #09213a, #030915);
+      border: 2px solid #169ce5;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 45px #0009;
+    }
+
+    header {
+      text-align: center;
+      padding: 28px 18px;
+    }
+
+    .brand {
+      font-size: clamp(32px, 8vw, 48px);
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .brand span { color: #45caff; }
+
+    .tagline {
+      margin-top: 7px;
+      color: #4bd2ff;
+      letter-spacing: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .artwork {
+      width: 100%;
+      max-height: 310px;
+      object-fit: cover;
+      display: none;
+    }
+
+    .fallback {
+      text-align: center;
+      padding: 65px 15px;
+      background: #10253d;
+      font-size: 52px;
+    }
+
+    .content { padding: 28px 24px; }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(24px, 6vw, 34px);
+      overflow-wrap: anywhere;
+      margin: 0 0 24px;
+    }
+
+    .detail {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .symbol {
+      font-size: 26px;
+      color: #4bd2ff;
+      flex-shrink: 0;
+    }
+
+    .primary {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .secondary {
+      color: #a5c2d6;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    .button {
+      display: block;
+      padding: 19px 12px;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      font-size: 19px;
+      font-weight: 800;
+      border-radius: 13px;
+      margin-top: 22px;
+      background: linear-gradient(110deg, #069dff, #0750d2);
+    }
+
+    .button:focus-visible {
+      outline: 3px solid white;
+      outline-offset: 3px;
+    }
+
+    .button.disabled {
+      background: #374456;
+      pointer-events: none;
+    }
+
+    .app-promo {
+      border-top: 1px solid #24506c;
+      text-align: center;
+      padding: 25px 20px 30px;
+    }
+
+    .app-promo p {
+      color: #bdd1df;
+      line-height: 1.5;
+    }
+
+    .app-promo a {
+      color: #52d2ff;
+      font-weight: 700;
+    }
+
+    .notice {
+      text-align: center;
+      color: #8fa7b9;
+      font-size: 12px;
+      padding: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <header>
+      <div class="brand">🎟 <span>Tour</span>Tunes</div>
+      <div class="tagline">CONCERT TRACKER</div>
+    </header>
+
+    <img id="artwork" class="artwork" alt="Concert artwork">
+    <div id="fallback" class="fallback">♫</div>
+
+    <section class="content">
+      <h1 id="artist">Discover Live Concerts</h1>
+
+      <div class="detail">
+        <div class="symbol">▦</div>
+        <div>
+          <div id="date" class="primary">Concert date</div>
+          <div id="time" class="secondary"></div>
+        </div>
+      </div>
+
+      <div class="detail">
+        <div class="symbol">⌖</div>
+        <div>
+          <div id="venue" class="primary">Concert venue</div>
+          <div id="city" class="secondary"></div>
+        </div>
+      </div>
+
+      <a id="tickets" class="button disabled" aria-disabled="true">
+        GET TICKETS ↗
+      </a>
+    </section>
+
+    <section class="app-promo">
+      <strong>Discover more concerts with TourTunes</strong>
+      <p>Find live performances featuring the artists you love.</p>
+      <a id="appLink" href="#" style="display:none">
+        Get TourTunes Concert Tracker ↗
+      </a>
+      <p id="comingSoon">TourTunes — coming to the App Store</p>
+    </section>
+  </main>
+
+  <p class="notice">
+    Event details are supplied by third-party listings.
+    Ticket purchases are handled by the ticket seller.
+  </p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const fields = {
+      artist: "artist",
+      date: "date",
+      time: "time",
+      venue: "venue",
+      city: "city"
+    };
+
+    for (const [parameter, elementId] of Object.entries(fields)) {
+      const value = params.get(parameter);
+      if (value && value.trim()) {
+        document.getElementById(elementId).textContent =
+          value.slice(0, 250);
+      }
+    }
+
+    const artwork = params.get("image");
+
+    if (artwork) {
+      try {
+        const imageURL = new URL(artwork);
+        if (imageURL.protocol === "https:") {
+          const img = document.getElementById("artwork");
+          img.src = imageURL.href;
+          img.onload = () => {
+            img.style.display = "block";
+            document.getElementById("fallback").style.display = "none";
+          };
+        }
+      } catch (_) {}
+    }
+
+    const ticketAddress = params.get("tickets");
+
+    if (ticketAddress) {
+      try {
+        const url = new URL(ticketAddress);
+        const hostname = url.hostname.toLowerCase();
+
+        if (
+          url.protocol === "https:" &&
+          (hostname === "ticketmaster.com" ||
+           hostname.endsWith(".ticketmaster.com"))
+        ) {
+          const button = document.getElementById("tickets");
+          button.href = url.href;
+          button.classList.remove("disabled");
+          button.removeAttribute("aria-disabled");
+        }
+      } catch (_) {}
+    }
+
+    // Add the verified TourTunes App Store URL after approval.
+    const tourTunesAppStoreURL = "";
+
+    if (tourTunesAppStoreURL) {
+      document.getElementById("appLink").href =
+        tourTunesAppStoreURL;
+      document.getElementById("appLink").style.display = "inline";
+      document.getElementById("comingSoon").style.display = "none";
+    }
+  </script>
+</body>
+</html>
